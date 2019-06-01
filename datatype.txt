@@ -1,0 +1,14 @@
+(* ユーザー定義型宣言 *)
+TYPE
+    NODE :
+    STRUCT
+        VALUE : INT ;
+        LEFT : NODE ; (* 左の子 *)
+        RIGHT : NODE ; (* 右の子 *)
+    END_STRUCT;
+
+    BUFFER : ARRAY[1..999] OF REAL;
+
+    ID : STRING;
+
+END_TYPE
