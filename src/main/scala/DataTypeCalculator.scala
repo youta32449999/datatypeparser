@@ -5,8 +5,7 @@ import scala.annotation.tailrec
 object DataTypeCalculator {
 
   // data type info from parse result
-  case class Data(name: String, component: Seq[DataTypeSize], arrayLength: Int, isStruct: Boolean) {
-
+  private[this] case class Data(name: String, component: Seq[DataTypeSize], arrayLength: Int, isStruct: Boolean) {
     // データ型のサイズに０がある場合は常に０を返す
     def size: Int = {
       val sum = component.foldLeft(0){(acc, e) => e.size + acc} * arrayLength
@@ -17,33 +16,41 @@ object DataTypeCalculator {
     }
   }
 
-  case class DataTypeSize(name: String, size: Int)
+  private[this] case class DataTypeSize(name: String, size: Int)
+
+
+  private[this] val primitiveDataTypeSize = Seq(
+    DataTypeSize("BOOL", toCalForm("0.0625")),
+    DataTypeSize("WORD", toCalForm("1")),
+    DataTypeSize("INT", toCalForm("1")),
+    DataTypeSize("UINT", toCalForm("1")),
+    DataTypeSize("DWORD", toCalForm("2")),
+    DataTypeSize("DINT", toCalForm("2")),
+    DataTypeSize("UDINT", toCalForm("2")),
+    DataTypeSize("REAL", toCalForm("2")),
+    DataTypeSize("TIME", toCalForm("2"))
+  )
+
 
   // 計算用に小数点以下桁上げ
-  def toCalForm(datasize: String): Int = (datasize.toFloat * 10000).toInt
+  private[this] def toCalForm(datasize: String): Int = (datasize.toFloat * 10000).toInt
 
-  def toCalForm(datasize: Int): Int = (datasize * 10000)
+
+  private[this] def toCalForm(datasize: Int): Int = (datasize * 10000)
+
 
   //　計算用から実際のサイズに戻す
-  def fromCalForm(datasize: Int): Int = datasize / 10000
+  private[this] def fromCalForm(datasize: Int): Int = datasize / 10000
 
-  // primitive data type size form file
-  def primitiveTypeFromFile(fileName: String): Seq[DataTypeSize] = {
-    val file = scala.io.Source.fromFile(fileName).getLines.map{line =>
-      val Array(name, datasize) = line.split(":")
-      DataTypeSize(name.trim, toCalForm(datasize))
-    }.toList
-    file
-  }
 
   // parse result convert for DataType
-  def convertFromDataTypeParserResult(seq: Seq[DataType]): Seq[Data] = seq.map(e => e match {
+  private[this] def convertToData(seq: Seq[DataType]): Seq[Data] = seq.map(e => e match {
     case TypeAlias(name, datatype) => Data(name, Seq(DataTypeSize(datatype, 0)), 1, false)
     case TypeArray(name, firstIndex, lastIndex, datatype) => Data(name, Seq(DataTypeSize(datatype, 0)), lastIndex - firstIndex + 1, false)
-    case TypeStruct(name, member) => Data(name, convertFromDataTypeParserResult(member).map(e => e.component).flatten, 1, true)
+    case TypeStruct(name, member) => Data(name, convertToData(member).map(e => e.component).flatten, 1, true)
   })
 
-  def calculate(primitiveDataFileName: String, parseResultSeq: Seq[DataType]): Seq[Data] = {
+  private[this] def calculate(parseResultSeq: Seq[DataType]): Seq[Data] = {
     @tailrec
     def loop(sizeSeq: Seq[DataTypeSize], dataSeq: Seq[Data]): Seq[Data] = sizeSeq match {
       case x::xs => {
@@ -63,13 +70,11 @@ object DataTypeCalculator {
       case Nil => dataSeq
     }
 
-    val dataSize = primitiveTypeFromFile(primitiveDataFileName)
-    val dataList = convertFromDataTypeParserResult(parseResultSeq)
-    loop(dataSize, dataList)
-
+    val dataList = convertToData(parseResultSeq)
+    loop(primitiveDataTypeSize, dataList)
   }
 
-  def apply(primitiveDataFileName: String, parseResultSeq: Seq[DataType]): Map[String, Int] = calculate(primitiveDataFileName, parseResultSeq)
+  def apply(parseResultSeq: Seq[DataType]): Map[String, Int] = calculate(parseResultSeq)
     .map(e => e.name -> fromCalForm(e.size))
     .toMap
 }
