@@ -28,8 +28,10 @@ object DataTypeParser extends JavaTokenParsers {
   def dataType: Parser[Seq[DataType]] = "TYPE" ~ rep(typeAlias | array | struct) ~ "END_TYPE" ^^
     {case _ ~ list ~ _ => list}
 
+  def dataTypeList: Parser[Seq[DataType]] = rep(dataType) ^^ {nestList => nestList.flatten}
+
   // inputからコメントを除去してからパース開始
-  def apply(input: String): ParseResult[Seq[DataType]] = parseAll(dataType, input.replaceAll(commentRegex, ""))
+  def apply(input: String): ParseResult[Seq[DataType]] = parseAll(dataTypeList, input.replaceAll(commentRegex, ""))
 
 }
 
