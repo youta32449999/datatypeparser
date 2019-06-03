@@ -1,9 +1,0 @@
-BOOL : 0.0625
-WORD : 1
-INT : 1
-UINT : 1
-DWORD : 2
-DINT : 2
-UDINT : 2
-REAL : 2
-TIME : 2
