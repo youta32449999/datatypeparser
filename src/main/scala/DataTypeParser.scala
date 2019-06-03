@@ -22,7 +22,7 @@ object DataTypeParser extends JavaTokenParsers {
   def array: Parser[DataType] = dataTypeName ~ ":" ~ "ARRAY" ~ "[" ~ digits ~ ".." ~ digits ~ "]" ~ "OF" ~ dataTypeName ~ ";" ^^
     {case name ~ _ ~ _ ~ _ ~ firstIndex ~ _ ~ lastIndex ~ _ ~ _ ~ elementDataType ~ _ => TypeArray(name, firstIndex.toInt, lastIndex.toInt, elementDataType)}
 
-  def struct: Parser[DataType] = dataTypeName ~ ":" ~ "STRUCT" ~ rep(typeAlias | array) ~ "END_STRUCT" ~ ";" ^^
+  def struct: Parser[DataType] = dataTypeName ~ ":" ~ "STRUCT" ~ rep(typeAlias) ~ "END_STRUCT" ~ ";" ^^
     {case name ~ _ ~ _ ~ member ~ _ ~ _ => TypeStruct(name, member)}
 
   def dataType: Parser[Seq[DataType]] = "TYPE" ~ rep(typeAlias | array | struct) ~ "END_TYPE" ^^
