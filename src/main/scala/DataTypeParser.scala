@@ -31,7 +31,7 @@ object DataTypeParser extends JavaTokenParsers {
   def dataTypeList: Parser[Seq[DataType]] = rep(dataType) ^^ {nestList => nestList.flatten}
 
   // inputからコメントを除去してからパース開始
-  def apply(input: String): ParseResult[Seq[DataType]] = parseAll(dataTypeList, input.replaceAll(commentRegex, ""))
+  def apply(input: String): ParseResult[Seq[DataType]] = parseAll(dataTypeList, input.replaceAll(commentRegex, "").replaceAll("　", ""))
 
 }
 
