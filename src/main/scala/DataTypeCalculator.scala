@@ -15,7 +15,10 @@ object DataTypeCalculator {
     DataTypeSize("DINT", 32, 2),
     DataTypeSize("UDINT", 32, 2),
     DataTypeSize("REAL", 32, 2),
-    DataTypeSize("TIME", 32, 2)
+    DataTypeSize("TIME", 32, 2),
+    DataTypeSize("DATE", 32, 2),
+    DataTypeSize("TOD", 32, 2),
+    DataTypeSize("DT", 32, 2)
   )
 
   // data type info from parse result
